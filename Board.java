@@ -7,8 +7,23 @@ public class Board {
 
     final int BOARD_SIZE = 5;
 
+    // Initializes the starting board
     public Board() {
-    	//TODO initialize variable board here
+    	this.board = new Piece[BOARD_SIZE][BOARD_SIZE];
+    }
+
+    // drops the given piece on the board, returns true iff successful.
+    //
+    // @param:
+    // - p: the piece to be dropped on the board (p != null)
+    // - loc: the location on the board
+    public void dropPiece(Piece p, int col, int row) {
+
+    }
+
+    // set the board to the initial starting state.
+    public void setInitialBoard() {
+
     }
 
     /* Print board */
