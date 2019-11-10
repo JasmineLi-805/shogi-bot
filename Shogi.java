@@ -9,7 +9,7 @@ public class Shogi {
 
     public static void main(String[] args) {
         if (args.length == 1 && args[0].equals("-i")) {
-            interactiveMode();
+            interactiveMode(true, 0);
         } else if (args.length == 2 && args[0].equals("-f")) {
             System.out.println("You are in file mode");
             Utils.TestCase testCase = null;
@@ -27,7 +27,7 @@ public class Shogi {
         Utils.TestCase testCase = null;
         try {
             // testCase = Utils.parseTestCase(args[1]);
-            testCase = Utils.parseTestCase("BoxShogi_Test_Cases/basicCheck.in");
+            testCase = Utils.parseTestCase("BoxShogi_Test_Cases/initialMove.in");
         } catch (Exception e) {
             System.out.println("Failed to read from file.");
             e.printStackTrace();
@@ -35,18 +35,20 @@ public class Shogi {
         fileMode(testCase);
     }
 
-    public static void interactiveMode() {
+    public static void interactiveMode(boolean newStart, int r) {
         // tracking the game state.
         //   gameState = 0: game continues;  gameState = 1: illegal move
-        //   gameState = 2: checkmate     ;  gameState = 4: tie game
+        //   gameState = 2: checkmate     ;  gameState = 3: tie game
         int gameState = 0;
 
         // even for lower, odd for UPPER
-        int round = 0;
+        int round = r;
 
         Scanner console = new Scanner(System.in);
 
-        initializeBoard();
+        if (newStart) {
+            initializeBoard();
+        }
 
         while (gameState == 0) {
             boolean upper = round % 2 == 1;
@@ -64,24 +66,66 @@ public class Shogi {
             // apply the move
             if (!applyAction(nextMove, upper)) {
                 gameState = 1;
+                printState();
                 break;
             }
 
             if (round == 400) {
-                gameState = 4;
+                gameState = 3;
                 break;
             }
         }
 
-        if (gameState == 1) {
-            System.out.println("Illegal move.");
-        }
+        printEndGameMessage(gameState, round % 2 == 0);
     }
 
     public static void fileMode(Utils.TestCase fileCase) {
-        System.out.println(fileCase.toString());
-        if (setBoard(fileCase.initialPieces)) {
-            printState();
+        setBoard(fileCase.initialPieces);
+        setPieces(fileCase.upperCaptures, fileCase.lowerCaptures);
+
+        int gameState = 0;
+        int i;
+        for (i = 0; i < fileCase.moves.size(); i++) {
+            boolean upper = i % 2 == 1;
+            String action = fileCase.moves.get(i);
+            if (i == fileCase.moves.size() - 1) {
+                printAction(upper, action);
+            }
+
+            if (!applyAction(fileCase.moves.get(i), upper)){
+                gameState = 1;
+                printState();
+                break;
+            }
+
+            if (i == 400) {
+                gameState = 3;
+                break;
+            }
+        }
+
+        if (gameState == 0) {
+            interactiveMode(false, i);
+        } else {
+            printEndGameMessage(gameState, i % 2 == 0);
+        }
+    }
+
+    public static void setPieces(List<String> upperCaptures, List<String> lowerCaptures) {
+        if (!upperCaptures.isEmpty()) {
+            for (String s : upperCaptures) {
+                if (s.length() > 0) {
+                    upperCapture.add(s.charAt(0));
+                }
+            }
+        }
+
+        if (!lowerCaptures.isEmpty()) {
+            for (String s : lowerCaptures) {
+                if (s.length() > 0) {
+                    lowerCapture.add(s.charAt(0));
+                }
+            }
         }
     }
 
@@ -116,7 +160,6 @@ public class Shogi {
             }
             return dropPiece(action[1], action[2], upper);
         }
-
 
         return true;
     }
@@ -260,7 +303,7 @@ public class Shogi {
         for (Utils.InitialPosition piece : initialPieces) {
             Step posi = toPosition(piece.position);
             if (board.isOccupied(posi.x, posi.y)) {
-                System.out.println("square occupied.");
+                System.out.println("Square occupied.");
                 return false;
             }
 
@@ -284,5 +327,19 @@ public class Shogi {
         }
 
         return true;
+    }
+
+    public static void printEndGameMessage(int gameState, boolean upper) {
+        if (gameState == 1) {
+            if (!upper) {
+                System.out.println("lower player wins.  Illegal move");
+            } else {
+                System.out.println("UPPER player wins.  Illegal move");
+            }
+        } else if (gameState == 3) {
+            System.out.println("checkmate");
+        } else {
+            System.out.println("Tie");
+        }
     }
 }
