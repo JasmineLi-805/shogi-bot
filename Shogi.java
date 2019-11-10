@@ -11,28 +11,22 @@ public class Shogi {
         if (args.length == 1 && args[0].equals("-i")) {
             interactiveMode(true, 0);
         } else if (args.length == 2 && args[0].equals("-f")) {
-            System.out.println("You are in file mode");
             Utils.TestCase testCase = null;
+
             try {
                 // testCase = Utils.parseTestCase(args[1]);
-                testCase = Utils.parseTestCase("BoxShogi_Test_Cases");
+                testCase = Utils.parseTestCase(args[1]);
             } catch (Exception e) {
-                System.out.println("Failed to read from file.");
+                System.out.println("Exception occurred: Failed to read from file.");
                 e.printStackTrace();
             }
-            fileMode(testCase);
+
+            if (testCase != null) {
+                fileMode(testCase);
+            }
         }
 
-        System.out.println("You are in file mode");
-        Utils.TestCase testCase = null;
-        try {
-            // testCase = Utils.parseTestCase(args[1]);
-            testCase = Utils.parseTestCase("BoxShogi_Test_Cases/initialMove.in");
-        } catch (Exception e) {
-            System.out.println("Failed to read from file.");
-            e.printStackTrace();
-        }
-        fileMode(testCase);
+        // System.out.println("You are in file mode");
     }
 
     public static void interactiveMode(boolean newStart, int r) {
@@ -331,7 +325,7 @@ public class Shogi {
 
     public static void printEndGameMessage(int gameState, boolean upper) {
         if (gameState == 1) {
-            if (!upper) {
+            if (upper) {
                 System.out.println("lower player wins.  Illegal move");
             } else {
                 System.out.println("UPPER player wins.  Illegal move");
