@@ -13,8 +13,6 @@ public class Shogi {
         } else if (args.length == 2 && args[0].equals("-f")) {
             System.out.println("You are in file mode");
         }
-
-        // printState();
     }
 
     public static void interactiveGame() {
@@ -60,10 +58,19 @@ public class Shogi {
         }
 
         if (action[0].equals("move")) {
+            // perform move
             if (!movePiece(action[1], action[2], upper)) {
                 return false;
             }
+
+            // promote if requested
+            if (action.length == 4 && action[3].equals("promote")) {
+                // implement promote
+            }
+        } else if (action[0].equals("drop")) {
+            // implement drop.
         }
+
 
         return true;
     }
@@ -77,17 +84,49 @@ public class Shogi {
         }
 
         Step dest = toPosition(end);
-        // check if move is possible: piece.validMove, board.validMove
+        Step step = new Step(dest.x - ori.x, dest.y - ori.y);
+        if (!validPath(toMove, ori, step)) {
+            return false;
+        }
 
         // when the player already has a piece at the destination.
         Piece p = board.getPiece(dest.x, dest.y);
         if (p != null && p.isUpper() == upper) {
             return false;
-        } else if (p != null) {
-            // capture p
+        } else if (p != null) {  // capture if there is the piece of the other player
+            capture(p, upper);
         }
 
         board.movePiece(ori.x, ori.y, dest.x, dest.y);
+        return true;
+    }
+
+    private static void capture(Piece p, boolean upper) {
+        String name = p.getName();
+        char piece = name.charAt(name.length() - 1);
+        if (upper) {
+            upperCapture.add((char)(piece - 32));
+        } else {
+            lowerCapture.add((char)(piece + 32));
+        }
+    }
+
+    private static boolean validPath(Piece p, Step ori, Step move) {
+        // check if move is possible for the piece
+        if (!p.validMove(move)) {
+            return false;
+        }
+
+        // check if there is blockage in this move
+        List<Step> steps = p.getPath(move);
+        if (steps != null) {
+            for (Step s : steps) {
+                if (board.isOccupied(ori.x + s.x, ori.y + s.y)) {
+                    return false;
+                }
+            }
+        }
+
         return true;
     }
 

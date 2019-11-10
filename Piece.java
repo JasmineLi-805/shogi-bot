@@ -7,6 +7,25 @@ public class Piece {
     boolean promoted;
     boolean upper;
 
+    // verify the step s is a valid move for the piece
+    public boolean validMove(Step s) {
+        for (Step move: moves.keySet()) {
+            if (move.equals(s)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public List<Step> getPath(Step s) {
+        for (Step move: moves.keySet()) {
+            if (move.equals(s)){
+                return moves.get(move);
+            }
+        }
+        return null;
+    }
+
     // promotes this piece, returns true iff successful
     public boolean promote() { return true; }
 

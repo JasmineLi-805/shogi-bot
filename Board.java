@@ -44,7 +44,7 @@ public class Board {
         return stringifyBoard(pieces);
     }
 
-    private boolean isOccupied(int col, int row) {
+    public boolean isOccupied(int col, int row) {
         return board[col][row] != null;
     }
 
