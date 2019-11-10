@@ -67,6 +67,7 @@ public class Governance extends Piece {
         if (this.promoted) {
             return false;
         }
+        this.name = "+" + this.name;
         this.moves.put(new Step(1, 0), null);
         this.moves.put(new Step(0, 1), null);
         this.moves.put(new Step(0, -1), null);

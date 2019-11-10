@@ -8,9 +8,7 @@ public class Piece {
     boolean upper;
 
     // promotes this piece, returns true iff successful
-    public boolean promote() {
-        return true;
-    }
+    public boolean promote() { return true; }
 
     // getter methods
     public String getName() {

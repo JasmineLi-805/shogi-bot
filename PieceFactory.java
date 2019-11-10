@@ -1,5 +1,5 @@
 public class PieceFactory {
-    public Piece createPiece(String name, boolean upper, boolean promote) {
+    public static Piece createPiece(String name, boolean upper, boolean promote) {
         Piece piece = null;
 
         if (name.endsWith("D") || name.endsWith("d")) {

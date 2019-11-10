@@ -19,6 +19,7 @@ public class Preview extends Piece {
         if (this.promoted) {
             return false;
         }
+        this.name = "+" + this.name;
         moves.clear();
         this.moves.put(new Step(-1, 0), null);
         this.moves.put(new Step(1, 0), null);

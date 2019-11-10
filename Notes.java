@@ -67,6 +67,7 @@ public class Notes extends Piece {
         if (this.promoted) {
             return false;
         }
+        this.name = "+" + this.name;
         this.moves.put(new Step(1, 1), null);
         this.moves.put(new Step(-1, 1), null);
         this.moves.put(new Step(1, -1), null);

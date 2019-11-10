@@ -12,18 +12,18 @@ public class Board {
     	this.board = new Piece[BOARD_SIZE][BOARD_SIZE];
     }
 
-    // drops the given piece on the board, returns true iff successful.
-    //
-    // @param:
-    // - p: the piece to be dropped on the board (p != null)
-    // - loc: the location on the board
+    // drops the given piece on the board
     public void dropPiece(Piece p, int col, int row) {
-
+        this.board[col][row] = p;
     }
 
-    // set the board to the initial starting state.
-    public void setInitialBoard() {
+    public void movePiece(int c1, int r1, int c2, int r2) {
+        this.board[c2][r2] = this.board[c1][r1];
+        this.board[c1][r1] = null;
+    }
 
+    public Piece getPiece(int col, int row) {
+        return this.board[col][row];
     }
 
     /* Print board */
@@ -31,8 +31,14 @@ public class Board {
         String[][] pieces = new String[BOARD_SIZE][BOARD_SIZE];
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
-                Piece curr = (Piece) board[col][row];
-                pieces[col][row] = this.isOccupied(col, row) ? board[col][row].toString() : "";
+                Piece curr = board[col][row];
+
+                if (curr != null) {
+                    pieces[col][row] = curr.getName();
+                } else {
+                    pieces[col][row] = "";
+                }
+                // pieces[col][row] = this.isOccupied(col, row) ? board[col][row].toString() : "";
             }
         }
         return stringifyBoard(pieces);
