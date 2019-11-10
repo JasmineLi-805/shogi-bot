@@ -32,10 +32,14 @@ public class Shogi {
             boolean upper = round % 2 == 1;
             printState();
 
-            // check if is in check
+            // to implement:
+            // check if is in check for both sides
+            // if the current player in check, print possible moves
+            // else just end game
 
             String nextMove = promptNextMove(console, upper);
             round++;
+            printAction(upper, nextMove);
 
             // apply the move
             if (!applyAction(nextMove, upper)) {
@@ -47,6 +51,14 @@ public class Shogi {
 
         if (gameState == 1) {
             System.out.println("Illegal move.");
+        }
+    }
+
+    public static void printAction(boolean upper, String action) {
+        if (upper){
+            System.out.println("UPPER player action: " + action);
+        } else {
+            System.out.println("lower player action: " + action);
         }
     }
 
@@ -68,9 +80,47 @@ public class Shogi {
                 // implement promote
             }
         } else if (action[0].equals("drop")) {
-            // implement drop.
+            if (action.length != 3) {
+                return false;
+            }
+            return dropPiece(action[1], action[2], upper);
         }
 
+
+        return true;
+    }
+
+    public static boolean dropPiece(String pieceName, String position, boolean upper) {
+        char p = pieceName.charAt(0);
+        if (upper) {
+            // if is UPPER user's round, capitalize piece name
+            p = (char)((int)p - 32);
+        }
+
+        // if player is dropping a piece never been captured
+        if (upper && !upperCapture.contains(p)) {
+            return false;
+        } else if (!upper && !lowerCapture.contains(p)) {
+            return false;
+        }
+
+        Step posi = toPosition(position);
+        if (board.isOccupied(posi.x, posi.y)) {
+            return false;
+        }
+
+        if (p == 'p' || p == 'P'){
+            // implement special case for preview piece.
+        }
+
+        // drop and remove piece from captured list.
+        Piece piece = PieceFactory.createPiece("" + p, upper, false);
+        board.dropPiece(piece, posi.x, posi.y);
+        if (upper) {
+            upperCapture.remove(upperCapture.indexOf(p));
+        } else {
+            lowerCapture.remove(lowerCapture.indexOf(p));
+        }
 
         return true;
     }
