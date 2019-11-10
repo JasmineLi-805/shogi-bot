@@ -9,13 +9,33 @@ public class Shogi {
 
     public static void main(String[] args) {
         if (args.length == 1 && args[0].equals("-i")) {
-            interactiveGame();
+            interactiveMode();
         } else if (args.length == 2 && args[0].equals("-f")) {
             System.out.println("You are in file mode");
+            Utils.TestCase testCase = null;
+            try {
+                // testCase = Utils.parseTestCase(args[1]);
+                testCase = Utils.parseTestCase("BoxShogi_Test_Cases");
+            } catch (Exception e) {
+                System.out.println("Failed to read from file.");
+                e.printStackTrace();
+            }
+            fileMode(testCase);
         }
+
+        System.out.println("You are in file mode");
+        Utils.TestCase testCase = null;
+        try {
+            // testCase = Utils.parseTestCase(args[1]);
+            testCase = Utils.parseTestCase("BoxShogi_Test_Cases/basicCheck.in");
+        } catch (Exception e) {
+            System.out.println("Failed to read from file.");
+            e.printStackTrace();
+        }
+        fileMode(testCase);
     }
 
-    public static void interactiveGame() {
+    public static void interactiveMode() {
         // tracking the game state.
         //   gameState = 0: game continues;  gameState = 1: illegal move
         //   gameState = 2: checkmate     ;  gameState = 4: tie game
@@ -47,10 +67,21 @@ public class Shogi {
                 break;
             }
 
+            if (round == 400) {
+                gameState = 4;
+                break;
+            }
         }
 
         if (gameState == 1) {
             System.out.println("Illegal move.");
+        }
+    }
+
+    public static void fileMode(Utils.TestCase fileCase) {
+        System.out.println(fileCase.toString());
+        if (setBoard(fileCase.initialPieces)) {
+            printState();
         }
     }
 
@@ -219,5 +250,39 @@ public class Shogi {
             Piece p = PieceFactory.createPiece("" + pieces[i], (int)pieces[i] < 97, false);
             board.dropPiece(p, position[i][0] - 1, position[i][1] - 1);
         }
+    }
+
+    public static boolean setBoard(List<Utils.InitialPosition> initialPieces) {
+        if (initialPieces == null) {
+            return false;
+        }
+
+        for (Utils.InitialPosition piece : initialPieces) {
+            Step posi = toPosition(piece.position);
+            if (board.isOccupied(posi.x, posi.y)) {
+                System.out.println("square occupied.");
+                return false;
+            }
+
+            String name = piece.piece;
+            boolean upper = (int) name.charAt(name.length() - 1) < 97;
+            Piece toSet;
+            if (name.startsWith("+")) {  // not handling the case when the piece cannot be promoted
+                toSet = PieceFactory.createPiece(name.substring(1), upper, true);
+            } else {
+                toSet = PieceFactory.createPiece(name, upper, false);
+            }
+
+            if (toSet == null) {
+                System.out.println("Cannot create piece.");
+                return false;
+            }
+
+            //System.out.println("right before dropping");
+            board.dropPiece(toSet, posi.x, posi.y);
+
+        }
+
+        return true;
     }
 }
