@@ -88,18 +88,27 @@ public class Shogi {
 
             if (!applyAction(fileCase.moves.get(i), upper)){
                 gameState = 1;
-                printState();
                 break;
             }
 
-            if (i == 400) {
+            if (i >= 400) {
                 gameState = 3;
                 break;
             }
         }
 
+        if (i >= 400) {
+            gameState = 3;
+        }
+
+        printState();
         if (gameState == 0) {
-            interactiveMode(false, i);
+            if (i % 2 == 0) {
+                System.out.println("lower> ");
+            } else {
+                System.out.println("UPPER> ");
+            }
+            // interactiveMode(false, i);
         } else {
             printEndGameMessage(gameState, i % 2 == 0);
         }
@@ -330,10 +339,10 @@ public class Shogi {
             } else {
                 System.out.println("UPPER player wins.  Illegal move");
             }
-        } else if (gameState == 3) {
+        } else if (gameState == 2) {
             System.out.println("checkmate");
         } else {
-            System.out.println("Tie");
+            System.out.println("Tie game.  Too many moves.");
         }
     }
 }
