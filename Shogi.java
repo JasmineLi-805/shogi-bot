@@ -28,7 +28,7 @@ public class Shogi {
         /*Utils.TestCase testCase = null;
 
         try {
-            testCase = Utils.parseTestCase("BoxShogi_Test_Cases/basicCheck.in");
+            testCase = Utils.parseTestCase("BoxShogi_Test_Cases/manyWaysOutOfCheck.in");
             // testCase = Utils.parseTestCase(args[1]);
         } catch (Exception e) {
             System.out.println("Exception occurred: Failed to read from file.");
@@ -280,7 +280,7 @@ public class Shogi {
     }
     public static boolean validDrop(String pieceName, String position, boolean upper) {
         char p = pieceName.charAt(0);
-        if (upper) {
+        if (upper && (int)p > 96) {
             // if is UPPER user's round, capitalize piece name
             p = (char)((int)p - 32);
         }
@@ -455,7 +455,7 @@ public class Shogi {
 
         if (upper) {
             for (char p : upperCapture) {
-                for (int i = 0; i < 5; i++) {
+                for (int i = 4; i < 5; i++) {
                     for (int j = 0; j < 5; j++) {
                         if (validDrop("" + p, stepToString(i, j), upper)) {
                             String name = "" + p;
