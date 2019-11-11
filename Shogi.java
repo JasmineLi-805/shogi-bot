@@ -243,6 +243,12 @@ public class Shogi {
         return true;
     }
 
+    /**
+     * returns true iff the given player is in check
+     *
+     * @param upper if the current player is the UPPER player
+     * @return true iff the given player is in check
+     */
     public static boolean check(boolean upper) {
         // find the Drive piece for this user
         String drivePosition = "";
@@ -281,6 +287,15 @@ public class Shogi {
 
         return false;
     }
+
+    /**
+     * returns true if it is an allowed move for the user to drop the piece at the given position
+     *
+     * @param pieceName the name of the piece
+     * @param position the position at which the piece would be dropped
+     * @param upper true if it is the UPPER player's move
+     * @return true if it is an allowed move for the user to drop the piece at the given position
+     */
     public static boolean validDrop(String pieceName, String position, boolean upper) {
         char p = pieceName.charAt(0);
         if (upper && (int)p > 96) {
@@ -295,11 +310,13 @@ public class Shogi {
             return false;
         }
 
+        // if the square is already occupied
         Step posi = toPosition(position);
         if (board.isOccupied(posi.x, posi.y)) {
             return false;
         }
 
+        // special case: the piece is Preview
         if (p == 'p' || p == 'P'){
             if (!validPreviewDrop(posi, upper)) {
                 return false;
@@ -308,6 +325,14 @@ public class Shogi {
 
         return true;
     }
+
+    /**
+     * returns true iff the Preview piece can be dropped to the position.
+     *
+     * @param position the position to be dropped to
+     * @param upper if it is the UPPER player's round
+     * @return true iff the Preview piece can be dropped to the position.
+     */
     public static boolean validPreviewDrop(Step position, boolean upper){
         // if is in promotion zone
         if (upper && position.y == 0) {
@@ -345,6 +370,15 @@ public class Shogi {
 
         return true;
     }
+
+    /**
+     * returns true iff the move operation is valid
+     *
+     * @param start the starting position of the piece
+     * @param end the ending position of the piece
+     * @param upper if it is the UPPER player's round
+     * @return true iff the piece can be moved from start to end by this player
+     */
     public static boolean validMove(String start, String end, boolean upper) {
         Step ori = toPosition(start);
         Piece toMove = board.getPiece(ori.x, ori.y);
@@ -353,6 +387,7 @@ public class Shogi {
             return false;
         }
 
+        // if the path from the start to the end is blocked
         Step dest = toPosition(end);
         Step step = new Step(dest.x - ori.x, dest.y - ori.y);
         if (!validPath(toMove, ori, step)) {
@@ -367,6 +402,15 @@ public class Shogi {
 
         return true;
     }
+
+    /**
+     * returns true if the move would put the player in check
+     *
+     * @param upper if it is the UPPER player's round
+     * @param ori the origin for the move
+     * @param dest the destination for the move
+     * @return true iff the move would put the player in check
+     */
     private static boolean peekForCheckMove(boolean upper, Step ori, Step dest) {
         Piece p = board.getPiece(dest.x, dest.y);
         board.movePiece(ori.x, ori.y, dest.x, dest.y);
@@ -378,6 +422,15 @@ public class Shogi {
 
         return inCheck;
     }
+
+    /**
+     * returns true if the drop operation would put the given user in check
+     *
+     * @param p the piece to be dropped
+     * @param loc the location to drop the piece
+     * @param upper if it is the UPPER player's round
+     * @return true iff the drop operation would put the given user in check
+     */
     private static boolean peekForCheckDrop(Piece p, Step loc, boolean upper) {
         board.dropPiece(p, loc.x, loc.y);
         boolean inCheck = check(upper);
@@ -385,6 +438,14 @@ public class Shogi {
 
         return inCheck;
     }
+
+    /**
+     * If there is no move that can put the given user out of check, return false.
+     * If there are moves to get user out of check, print the moves in alphabetical order and return true.
+     *
+     * @param upper if it is the UPPER player's round
+     * @return true iff there is at least one move to get the given player out of check
+     */
     private static boolean isOutOfCheck(boolean upper) {
         List<String> suggestions = suggest(upper);
 
@@ -406,14 +467,22 @@ public class Shogi {
         }
     }
 
-    private static boolean validPath(Piece p, Step ori, Step move) {
+    /**
+     * returns true if there is no blockage for the step to move from origin to destination
+     *
+     * @param p the piece to be moved
+     * @param ori the original position
+     * @param dest the destination
+     * @return true iff there is no blockage for the step to move from origin to destination
+     */
+    private static boolean validPath(Piece p, Step ori, Step dest) {
         // check if move is possible for the piece
-        if (!p.validMove(move)) {
+        if (!p.validMove(dest)) {
             return false;
         }
 
         // check if there is blockage in this move
-        List<Step> steps = p.getPath(move);
+        List<Step> steps = p.getPath(dest);
         if (steps != null) {
             for (Step s : steps) {
                 if (board.isOccupied(ori.x + s.x, ori.y + s.y)) {
@@ -467,36 +536,25 @@ public class Shogi {
             }
         }
 
+        List<Character> captured;
         if (upper) {
-            for (char p : upperCapture) {
-                for (int i = 4; i < 5; i++) {
-                    for (int j = 0; j < 5; j++) {
-                        if (validDrop("" + p, stepToString(i, j), upper)) {
-                            String name = "" + p;
-                            Piece piece = PieceFactory.createPiece(name, upper, false);
-                            if (!peekForCheckDrop(piece, new Step(i, j), upper)) {
-                                suggestions.add("drop " + name.toLowerCase() + " " + stepToString(i, j));
-                            }
-                        }
-                    }
-                }
-            }
+            captured = upperCapture;
         } else {
-            for (char p : lowerCapture) {
-                for (int i = 0; i < 5; i++) {
-                    for (int j = 0; j < 5; j++) {
-                        if (validDrop("" + p, stepToString(i, j), upper)) {
-                            String name = "" + p;
-                            Piece piece = PieceFactory.createPiece(name, upper, false);
-                            if (!peekForCheckDrop(piece, new Step(i, j), upper)) {
-                                suggestions.add("drop " + name.toLowerCase() + " " + stepToString(i, j));
-                            }
+            captured = lowerCapture;
+        }
+        for (char p : captured) {
+            for (int i = 4; i < 5; i++) {
+                for (int j = 0; j < 5; j++) {
+                    if (validDrop("" + p, stepToString(i, j), upper)) {
+                        String name = "" + p;
+                        Piece piece = PieceFactory.createPiece(name, upper, false);
+                        if (!peekForCheckDrop(piece, new Step(i, j), upper)) {
+                            suggestions.add("drop " + name.toLowerCase() + " " + stepToString(i, j));
                         }
                     }
                 }
             }
         }
-
 
         return suggestions;
     }
