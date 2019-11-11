@@ -14,7 +14,6 @@ public class Shogi {
             Utils.TestCase testCase = null;
 
             try {
-                //testCase = Utils.parseTestCase("BoxShogi_Test_Cases/notesPromotion.in");
                 testCase = Utils.parseTestCase(args[1]);
             } catch (Exception e) {
                 System.out.println("Exception occurred: Failed to read from file.");
@@ -29,7 +28,7 @@ public class Shogi {
         /*Utils.TestCase testCase = null;
 
         try {
-            testCase = Utils.parseTestCase("BoxShogi_Test_Cases/notesPromotion.in");
+            testCase = Utils.parseTestCase("BoxShogi_Test_Cases/promoteLeavingZone.in");
             // testCase = Utils.parseTestCase(args[1]);
         } catch (Exception e) {
             System.out.println("Exception occurred: Failed to read from file.");
@@ -174,8 +173,21 @@ public class Shogi {
 
 
             if (action.length == 4 && action[3].equals("promote")) {  // promote on request
-                if ((upper && endP.y != 0) || (!upper && endP.y != 4)) {
-                    return false;  // the piece is not landing on promotion zone
+                //if ((upper && endP.y != 0) || (!upper && endP.y != 4)) {
+                //    return false;  // the piece is not landing on promotion zone
+                //}
+
+                // if the piece is not starting or ending on promotion zone
+                if (upper && endP.y == 0) {
+
+                } else if (upper && startP.y == 0) {
+
+                } else if (!upper && endP.y == 4) {
+
+                } else if (!upper && startP.y == 4){
+
+                } else {
+                    return false;
                 }
 
                 Piece toPromote = board.getPiece(startP.x, startP.y);
