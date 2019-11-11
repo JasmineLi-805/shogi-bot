@@ -185,15 +185,8 @@ public class Shogi {
             Piece toPromote = board.getPiece(startP.x, startP.y);
             if (action.length == 4 && action[3].equals("promote")) {  // promote on request
                 // if the piece is not starting or ending on promotion zone
-                if (upper && endP.y == 0) {
-
-                } else if (upper && startP.y == 0) {
-
-                } else if (!upper && endP.y == 4) {
-
-                } else if (!upper && startP.y == 4){
-
-                } else {
+                if (!(upper && endP.y == 0) && !(upper && startP.y == 0)
+                        && !(!upper && endP.y == 4) && !(!upper && startP.y == 4)) {
                     return false;
                 }
 
@@ -201,9 +194,8 @@ public class Shogi {
                     return false;  // the piece cannot be promoted
                 }
             } else if (toPromote.getName().equals("p") || toPromote.getName().equals("P")) {
-                if (upper && endP.y == 0) {
-                    toPromote.promote();
-                } else if (!upper && endP.y == 4) {
+                // forced promote if Preview is in promotion zone
+                if ((upper && endP.y == 0) || (!upper && endP.y == 4)) {
                     toPromote.promote();
                 }
             }
@@ -213,12 +205,15 @@ public class Shogi {
                 capture(exist, upper);
             }
 
+            // apply the move
             board.movePiece(startP.x, startP.y, endP.x, endP.y);
 
-        } else if (action[0].equals("drop")) {
+        } else if (action[0].equals("drop")) {      // to drop a piece
             if (action.length != 3) {
                 return false;
             }
+
+            // if the drop action is not valid
             if (!validDrop(action[1], action[2], upper)){
                 return false;
             }
