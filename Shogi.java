@@ -14,7 +14,7 @@ public class Shogi {
             Utils.TestCase testCase = null;
 
             try {
-                // testCase = Utils.parseTestCase(args[1]);
+                //testCase = Utils.parseTestCase("BoxShogi_Test_Cases/notesPromotion.in");
                 testCase = Utils.parseTestCase(args[1]);
             } catch (Exception e) {
                 System.out.println("Exception occurred: Failed to read from file.");
@@ -25,6 +25,20 @@ public class Shogi {
                 fileMode(testCase);
             }
         }
+
+        /*Utils.TestCase testCase = null;
+
+        try {
+            testCase = Utils.parseTestCase("BoxShogi_Test_Cases/notesPromotion.in");
+            // testCase = Utils.parseTestCase(args[1]);
+        } catch (Exception e) {
+            System.out.println("Exception occurred: Failed to read from file.");
+            e.printStackTrace();
+        }
+
+        if (testCase != null) {
+            fileMode(testCase);
+        }*/
 
         // System.out.println("You are in file mode");
     }
@@ -110,7 +124,7 @@ public class Shogi {
             }
             // interactiveMode(false, i);
         } else {
-            printEndGameMessage(gameState, i % 2 == 0);
+            printEndGameMessage(gameState, i % 2 != 0);
         }
     }
 
@@ -148,20 +162,42 @@ public class Shogi {
         }
 
         if (action[0].equals("move")) {
-            // perform move
-            if (!movePiece(action[1], action[2], upper)) {
+            String startPosition = action[1];
+            Step startP = toPosition(startPosition);
+            String endPosition = action[2];
+            Step endP = toPosition(endPosition);
+
+            // check if can be moved
+            if (!validMove(action[1], action[2], upper)) {
                 return false;
             }
 
-            // promote if requested
-            if (action.length == 4 && action[3].equals("promote")) {
-                // implement promote
+
+            if (action.length == 4 && action[3].equals("promote")) {  // promote on request
+                if ((upper && endP.y != 0) || (!upper && endP.y != 4)) {
+                    return false;  // the piece is not landing on promotion zone
+                }
+
+                Piece toPromote = board.getPiece(startP.x, startP.y);
+                if (!toPromote.promote()) {
+                    return false;  // the piece cannot be promoted
+                }
             }
+
+            Piece exist = board.getPiece(endP.x, endP.y);
+            if (exist != null) {  // capture if there is the piece of the other player
+                capture(exist, upper);
+            }
+
+            board.movePiece(startP.x, startP.y, endP.x, endP.y);
+
         } else if (action[0].equals("drop")) {
             if (action.length != 3) {
                 return false;
             }
             return dropPiece(action[1], action[2], upper);
+        } else {
+            return false;
         }
 
         return true;
@@ -202,7 +238,7 @@ public class Shogi {
         return true;
     }
 
-    public static boolean movePiece(String start, String end, boolean upper) {
+    public static boolean validMove(String start, String end, boolean upper) {
         Step ori = toPosition(start);
         Piece toMove = board.getPiece(ori.x, ori.y);
         // if there is no piece at the location or the piece doesn't belong to the current player, move fail.
@@ -220,11 +256,8 @@ public class Shogi {
         Piece p = board.getPiece(dest.x, dest.y);
         if (p != null && p.isUpper() == upper) {
             return false;
-        } else if (p != null) {  // capture if there is the piece of the other player
-            capture(p, upper);
         }
 
-        board.movePiece(ori.x, ori.y, dest.x, dest.y);
         return true;
     }
 
@@ -335,9 +368,9 @@ public class Shogi {
     public static void printEndGameMessage(int gameState, boolean upper) {
         if (gameState == 1) {
             if (upper) {
-                System.out.println("lower player wins.  Illegal move");
+                System.out.println("lower player wins.  Illegal move.");
             } else {
-                System.out.println("UPPER player wins.  Illegal move");
+                System.out.println("UPPER player wins.  Illegal move.");
             }
         } else if (gameState == 2) {
             System.out.println("checkmate");
