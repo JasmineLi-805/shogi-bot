@@ -1,6 +1,4 @@
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Shogi {
     private static Board board = new Board();
@@ -30,7 +28,7 @@ public class Shogi {
         /*Utils.TestCase testCase = null;
 
         try {
-            testCase = Utils.parseTestCase("BoxShogi_Test_Cases/drop.in");
+            testCase = Utils.parseTestCase("BoxShogi_Test_Cases/basicCheck.in");
             // testCase = Utils.parseTestCase(args[1]);
         } catch (Exception e) {
             System.out.println("Exception occurred: Failed to read from file.");
@@ -123,10 +121,22 @@ public class Shogi {
         boolean upper = i % 2 == 1;
         boolean playerInCheck = check(upper);
         if (playerInCheck) {
-            if (upper) {
-                System.out.println("UPPER player is in check!");
+            List<String> suggestions = suggest(upper);
+
+            if (suggestions.isEmpty()) {
+                gameState = 2;
             } else {
-                System.out.println("lower player is in check!");
+                if (upper) {
+                    System.out.println("UPPER player is in check!");
+                } else {
+                    System.out.println("lower player is in check!");
+                }
+
+                Collections.sort(suggestions);
+                System.out.println("Available moves:");
+                for (String s : suggestions) {
+                    System.out.println(s);
+                }
             }
         }
 
@@ -160,7 +170,7 @@ public class Shogi {
                 return false;
             }
 
-            if (peekForCheck(upper, startP, endP)){
+            if (peekForCheckMove(upper, startP, endP)){
                 return false;
             }
 
@@ -363,7 +373,7 @@ public class Shogi {
 
         return true;
     }
-    private static boolean peekForCheck(boolean upper, Step ori, Step dest) {
+    private static boolean peekForCheckMove(boolean upper, Step ori, Step dest) {
         Piece p = board.getPiece(dest.x, dest.y);
         board.movePiece(ori.x, ori.y, dest.x, dest.y);
 
@@ -374,6 +384,14 @@ public class Shogi {
 
         return inCheck;
     }
+    private static boolean peekForCheckDrop(Piece p, Step loc, boolean upper) {
+        board.dropPiece(p, loc.x, loc.y);
+        boolean inCheck = check(upper);
+        board.dropPiece(null, loc.x, loc.y);
+
+        return inCheck;
+    }
+
     private static boolean validPath(Piece p, Step ori, Step move) {
         // check if move is possible for the piece
         if (!p.validMove(move)) {
@@ -410,6 +428,63 @@ public class Shogi {
         }
         String input = console.nextLine();
         return input.trim();
+    }
+
+    private static List<String> suggest(boolean upper) {
+        List<String> suggestions = new LinkedList<>();
+
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                Piece p = board.getPiece(i, j);
+                if (p != null && p.isUpper() == upper) {
+                    for (Step s : p.getMoves().keySet()) {
+                        Step ori = new Step(i, j);
+                        Step dest = new Step(i + s.x, j + s.y);
+                        if (dest.x < 0 || dest.y < 0 || dest.x > 4 || dest.y > 4) {
+                            continue;
+                        }
+                        String start = stepToString(ori);
+                        String end = stepToString(dest);
+                        if (validMove(start, end, upper) && !peekForCheckMove(upper, ori, dest)) {
+                            suggestions.add("move " + start + " " + end);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (upper) {
+            for (char p : upperCapture) {
+                for (int i = 0; i < 5; i++) {
+                    for (int j = 0; j < 5; j++) {
+                        if (validDrop("" + p, stepToString(i, j), upper)) {
+                            String name = "" + p;
+                            Piece piece = PieceFactory.createPiece(name, upper, false);
+                            if (!peekForCheckDrop(piece, new Step(i, j), upper)) {
+                                suggestions.add("drop " + name.toLowerCase() + " " + stepToString(i, j));
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            for (char p : lowerCapture) {
+                for (int i = 0; i < 5; i++) {
+                    for (int j = 0; j < 5; j++) {
+                        if (validDrop("" + p, stepToString(i, j), upper)) {
+                            String name = "" + p;
+                            Piece piece = PieceFactory.createPiece(name, upper, false);
+                            if (!peekForCheckDrop(piece, new Step(i, j), upper)) {
+                                suggestions.add("drop " + name.toLowerCase() + " " + stepToString(i, j));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        return suggestions;
     }
 
     private static Step toPosition(String location) {
@@ -521,7 +596,11 @@ public class Shogi {
                 System.out.println("UPPER player wins.  Illegal move.");
             }
         } else if (gameState == 2) {
-            System.out.println("checkmate");
+            if (upper) {
+                System.out.println("lower player wins.  Checkmate.");
+            } else {
+                System.out.println("UPPER player wins.  Checkmate.");
+            }
         } else {
             System.out.println("Tie game.  Too many moves.");
         }
