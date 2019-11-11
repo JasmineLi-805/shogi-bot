@@ -172,11 +172,8 @@ public class Shogi {
             }
 
 
+            Piece toPromote = board.getPiece(startP.x, startP.y);
             if (action.length == 4 && action[3].equals("promote")) {  // promote on request
-                //if ((upper && endP.y != 0) || (!upper && endP.y != 4)) {
-                //    return false;  // the piece is not landing on promotion zone
-                //}
-
                 // if the piece is not starting or ending on promotion zone
                 if (upper && endP.y == 0) {
 
@@ -190,9 +187,14 @@ public class Shogi {
                     return false;
                 }
 
-                Piece toPromote = board.getPiece(startP.x, startP.y);
                 if (!toPromote.promote()) {
                     return false;  // the piece cannot be promoted
+                }
+            } else if (toPromote.getName().equals("p") || toPromote.getName().equals("P")) {
+                if (upper && endP.y == 0) {
+                    toPromote.promote();
+                } else if (!upper && endP.y == 4) {
+                    toPromote.promote();
                 }
             }
 
