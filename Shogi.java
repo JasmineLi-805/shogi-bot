@@ -235,7 +235,9 @@ public class Shogi {
         }
 
         if (p == 'p' || p == 'P'){
-            // implement special case for preview piece.
+            if (!validPreviewDrop(posi, upper)) {
+                return false;
+            }
         }
 
         // drop and remove piece from captured list.
@@ -245,6 +247,44 @@ public class Shogi {
             upperCapture.remove(upperCapture.indexOf(p));
         } else {
             lowerCapture.remove(lowerCapture.indexOf(p));
+        }
+
+        return true;
+    }
+
+    public static boolean validPreviewDrop(Step position, boolean upper){
+        // if is in promotion zone
+        if (upper && position.y == 0) {
+            return false;
+        } else if (!upper && position.y == 4) {
+            return false;
+        }
+
+        // if immediate checkmate
+        if (upper) {
+            Piece p = board.getPiece(position.x, position.y - 1);
+            if (p != null && p.getName().equals("d")) {
+                return false;
+            }
+        } else {
+            Piece p = board.getPiece(position.x, position.y + 1);
+            if (p != null && p.getName().equals("D")) {
+                return false;
+            }
+        }
+
+        // have another same-team unpromoted preview in same column
+        for (int i = 0; i < 5; i++) {
+            Piece p = board.getPiece(position.x, i);
+            if (upper) {
+                if (p != null && p.getName().equals("P")) {
+                    return false;
+                }
+            } else {
+                if (p != null && p.getName().equals("p")) {
+                    return false;
+                }
+            }
         }
 
         return true;
