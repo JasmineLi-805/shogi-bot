@@ -1,16 +1,21 @@
 import java.util.*;
 
+/**
+ * The Shogi class manages a Shogi game and allows the client to play in interactive mode or file mode
+ *     use the "java Shogi -i" command to play in interactive mode
+ *     use the "java Shogi -f <file_path>" command to play in file mode.
+ */
 public class Shogi {
-    private static Board board = new Board();
-    private static List<Character> upperCapture = new LinkedList<>();
-    private static List<Character> lowerCapture = new LinkedList<>();
+    private static Board board = new Board();   // keep track of board state
+    private static List<Character> upperCapture = new LinkedList<>();   // pieces captured by UPPER user
+    private static List<Character> lowerCapture = new LinkedList<>();   // pieces captured by lower user
 
     public static void main(String[] args) {
-        if (args.length == 1 && args[0].equals("-i")) {
+        if (args.length == 1 && args[0].equals("-i")) {     // play in interactive mode
             interactiveMode(true, 0);
-        } else if (args.length == 2 && args[0].equals("-f")) {
+        } else if (args.length == 2 && args[0].equals("-f")) {     // play in file mode
+            // read from the file.
             Utils.TestCase testCase = null;
-
             try {
                 testCase = Utils.parseTestCase(args[1]);
             } catch (Exception e) {
@@ -18,30 +23,22 @@ public class Shogi {
                 e.printStackTrace();
             }
 
+            // start game in file mode
             if (testCase != null) {
                 fileMode(testCase);
             }
+        } else {
+            System.out.println("Usage: 'java Shogi -i' for interactive mode");
+            System.out.println("       'java Shogi -f <file_path>' for file mode");
         }
-
-        // interactiveMode(true, 0);
-
-        /*Utils.TestCase testCase = null;
-
-        try {
-            testCase = Utils.parseTestCase("BoxShogi_Test_Cases/manyWaysOutOfCheck.in");
-            // testCase = Utils.parseTestCase(args[1]);
-        } catch (Exception e) {
-            System.out.println("Exception occurred: Failed to read from file.");
-            e.printStackTrace();
-        }
-
-        if (testCase != null) {
-            fileMode(testCase);
-        }*/
-
-        // System.out.println("You are in file mode");
     }
 
+    /**
+     * Plays the game in interactive mode
+     *
+     * @param newStart true if it is a new start of the game
+     * @param r the number of rounds played before interactive mode starts
+     */
     public static void interactiveMode(boolean newStart, int r) {
         // tracking the game state.
         //   gameState = 0: game continues;  gameState = 1: illegal move
@@ -53,6 +50,7 @@ public class Shogi {
 
         Scanner console = new Scanner(System.in);
 
+        // initialize the board if is a new game
         if (newStart) {
             initializeBoard();
         }
@@ -61,24 +59,24 @@ public class Shogi {
             boolean upper = round % 2 == 1;
             printState();
 
-
-            System.out.println("******************");
-            //boolean playerInCheck = check(upper);
-            //if (playerInCheck) {
-            //    System.out.println("I'm in check, need suggestions!!");
-            //}
+            // check if the current player is in check, end game if is checkmate
+            if (check(upper) && !isOutOfCheck(upper)) {
+                gameState = 2;
+                break;
+            }
 
             String nextMove = promptNextMove(console, upper);
             round++;
             printAction(upper, nextMove);
 
-            // apply the move
+            // apply the move, if the move cannot be applied, it is illegal.
             if (!applyAction(nextMove, upper)) {
                 gameState = 1;
                 printState();
                 break;
             }
 
+            // if the game has reached too many rounds.
             if (round == 400) {
                 gameState = 3;
                 break;
@@ -88,56 +86,53 @@ public class Shogi {
         printEndGameMessage(gameState, round % 2 == 0);
     }
 
+    /**
+     * Plays the game in file mode.
+     *
+     * @param fileCase a TestCase parsed from the file
+     */
     public static void fileMode(Utils.TestCase fileCase) {
+        // setup the board and the captured pieces.
         setBoard(fileCase.initialPieces);
         setPieces(fileCase.upperCaptures, fileCase.lowerCaptures);
 
+        // tracking the game state.
+        //   gameState = 0: game continues;  gameState = 1: illegal move
+        //   gameState = 2: checkmate     ;  gameState = 3: tie game
         int gameState = 0;
         int i;
         for (i = 0; i < fileCase.moves.size(); i++) {
+            // it is the UPPER player's round if round number is odd. Round number starts from 0.
             boolean upper = i % 2 == 1;
             String action = fileCase.moves.get(i);
             if (i == fileCase.moves.size() - 1) {
                 printAction(upper, action);
             }
 
+            // apply the move, if could not be applied it is an illegal move, game ends
             if (!applyAction(fileCase.moves.get(i), upper)){
                 gameState = 1;
                 break;
             }
 
+            // when there is too many moves, it's a tie, game ends
             if (i >= 400) {
                 gameState = 3;
                 break;
             }
         }
 
+        printState();
+
+        // when the last move is also the 400th move.
         if (i >= 400) {
             gameState = 3;
         }
 
-        printState();
-
+        // if the current user is in check and there is no move out of check, it is a checkmate
         boolean upper = i % 2 == 1;
-        boolean playerInCheck = check(upper);
-        if (playerInCheck) {
-            List<String> suggestions = suggest(upper);
-
-            if (suggestions.isEmpty()) {
-                gameState = 2;
-            } else {
-                if (upper) {
-                    System.out.println("UPPER player is in check!");
-                } else {
-                    System.out.println("lower player is in check!");
-                }
-
-                Collections.sort(suggestions);
-                System.out.println("Available moves:");
-                for (String s : suggestions) {
-                    System.out.println(s);
-                }
-            }
+        if (check(upper) && !isOutOfCheck(upper)) {
+            gameState = 2;
         }
 
         if (gameState == 0) {
@@ -146,12 +141,24 @@ public class Shogi {
             } else {
                 System.out.println("UPPER> ");
             }
+
+            /* redirect to interactive mode */
             // interactiveMode(false, i);
         } else {
-            printEndGameMessage(gameState, i % 2 != 0);
+            printEndGameMessage(gameState, upper);
         }
     }
 
+    /**
+     * Applies the given action, return true iff the action is applied successfully.
+     * If false if returned, the action is illegal.
+     *
+     * @param nextAction command for the action, should be either in the format
+     *                   "move <coordinate> <coordinate> [promote]" or "drop <piece> <coordinate>"
+     *
+     * @param upper true if it is the upper player applying the action, false if is the lower player
+     * @return true iff the action is successfully applied.
+     */
     public static boolean applyAction(String nextAction, boolean upper) {
         String[] action = nextAction.split(" ",0);
 
@@ -170,6 +177,7 @@ public class Shogi {
                 return false;
             }
 
+            // if this move put the current player in check, it is an illegal move
             if (peekForCheckMove(upper, startP, endP)){
                 return false;
             }
@@ -303,15 +311,6 @@ public class Shogi {
             }
         }
 
-        // drop and remove piece from captured list.
-        /*Piece piece = PieceFactory.createPiece("" + p, upper, false);
-        board.dropPiece(piece, posi.x, posi.y);
-        if (upper) {
-            upperCapture.remove(upperCapture.indexOf(p));
-        } else {
-            lowerCapture.remove(lowerCapture.indexOf(p));
-        }*/
-
         return true;
     }
     public static boolean validPreviewDrop(Step position, boolean upper){
@@ -390,6 +389,26 @@ public class Shogi {
         board.dropPiece(null, loc.x, loc.y);
 
         return inCheck;
+    }
+    private static boolean isOutOfCheck(boolean upper) {
+        List<String> suggestions = suggest(upper);
+
+        if (suggestions.isEmpty()) {
+            return false;
+        } else {
+            if (upper) {
+                System.out.println("UPPER player is in check!");
+            } else {
+                System.out.println("lower player is in check!");
+            }
+
+            Collections.sort(suggestions);
+            System.out.println("Available moves:");
+            for (String s : suggestions) {
+                System.out.println(s);
+            }
+            return true;
+        }
     }
 
     private static boolean validPath(Piece p, Step ori, Step move) {
