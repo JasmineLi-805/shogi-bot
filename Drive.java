@@ -1,5 +1,8 @@
 import java.util.HashMap;
 
+/**
+ * Represents a drive piece in BoxShogi
+ */
 public class Drive extends Piece {
     public Drive(String name, boolean upper) {
         this.name = name;

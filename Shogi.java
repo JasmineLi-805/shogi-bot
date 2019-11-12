@@ -494,6 +494,12 @@ public class Shogi {
         return true;
     }
 
+    /**
+     * captures the given piece
+     *
+     * @param p the piece to be captured
+     * @param upper the player
+     */
     private static void capture(Piece p, boolean upper) {
         String name = p.getName();
         char piece = name.charAt(name.length() - 1);
@@ -503,6 +509,14 @@ public class Shogi {
             lowerCapture.add((char)(piece + 32));
         }
     }
+
+    /**
+     * prompts and returns the user's next move
+     *
+     * @param console a Scanner to console
+     * @param upper the side of the player
+     * @return the input of the user
+     */
     public static String promptNextMove(Scanner console, boolean upper) {
         if (upper) {
             System.out.print("UPPER> ");
@@ -513,9 +527,17 @@ public class Shogi {
         return input.trim();
     }
 
+    /**
+     * returns a list of possible moves to get the player out of check,
+     * the list is empty if there is no move that gets the player out of check
+     *
+     * @param upper the player
+     * @return a list of possible moves to get the player out of check
+     */
     private static List<String> suggest(boolean upper) {
         List<String> suggestions = new LinkedList<>();
 
+        // find all the possible move operations that gets user out of check
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
                 Piece p = board.getPiece(i, j);
@@ -536,6 +558,7 @@ public class Shogi {
             }
         }
 
+        // find all the drop operations that gets the user out of check.
         List<Character> captured;
         if (upper) {
             captured = upperCapture;
@@ -559,9 +582,23 @@ public class Shogi {
         return suggestions;
     }
 
+    /**
+     * translate the string location to a Step object
+     *
+     * @param location the location
+     * @return a Step object that represents the given location
+     */
     private static Step toPosition(String location) {
         return new Step((int)location.charAt(0) - 97, (int)location.charAt(1) - 49);
     }
+
+    /**
+     * translate the coordinate into a String represented location
+     *
+     * @param x x-coordinate
+     * @param y y-coordinate
+     * @return a String representing the coordinate
+     */
     private static String stepToString(int x, int y) {
         String result = "";
         result += (char)(x + 97);
@@ -569,6 +606,13 @@ public class Shogi {
 
         return result;
     }
+
+    /**
+     * translate the Step into a String represented location
+     *
+     * @param s the Step object
+     * @return a String representing the coordinate
+     */
     private static String stepToString(Step s) {
         String result = "";
         result += (char)((int)s.x + 97);
@@ -577,6 +621,9 @@ public class Shogi {
         return result;
     }
 
+    /**
+     * Initialized the board according to rules of BoxShogi
+     */
     public static void initializeBoard() {
         char[] pieces = {'D', 'R', 'P', 'S', 'N', 'G', 'd', 'r', 'p', 's', 'n', 'g'};
         int[][] position = {{5, 5}, {3, 5}, {5, 4}, {4, 5}, {1, 5}, {2, 5},
@@ -586,6 +633,13 @@ public class Shogi {
             board.dropPiece(p, position[i][0] - 1, position[i][1] - 1);
         }
     }
+
+    /**
+     * Sets the pieces captured by UPPER player and lower player according to the given lists
+     *
+     * @param upperCaptures pieces captured by UPPER player
+     * @param lowerCaptures pieces captured by lower player
+     */
     public static void setPieces(List<String> upperCaptures, List<String> lowerCaptures) {
         if (!upperCaptures.isEmpty()) {
             for (String s : upperCaptures) {
@@ -603,6 +657,13 @@ public class Shogi {
             }
         }
     }
+
+    /**
+     * Sets up the board by the given pieces and their locations
+     *
+     * @param initialPieces the pieces and their locations
+     * @return true iff the setup is successful
+     */
     public static boolean setBoard(List<Utils.InitialPosition> initialPieces) {
         if (initialPieces == null) {
             return false;
@@ -637,6 +698,9 @@ public class Shogi {
         return true;
     }
 
+    /**
+     * prints the current board state and the captured pieces
+     */
     public static void printState() {
         System.out.println(board.toString());
 
@@ -653,6 +717,13 @@ public class Shogi {
         System.out.println();
         System.out.println();
     }
+
+    /**
+     * prints the player's move
+     *
+     * @param upper the player
+     * @param action the most recent move by the player
+     */
     public static void printAction(boolean upper, String action) {
         if (upper){
             System.out.println("UPPER player action: " + action);
@@ -660,6 +731,15 @@ public class Shogi {
             System.out.println("lower player action: " + action);
         }
     }
+
+    /**
+     * Prints the message for the end game.
+     *
+     * @param gameState the state of the game when ended
+     *                  0 for game continues; 1 for illegal moves;
+     *                  2 for checkmate; 3 for tie game
+     * @param upper the player
+     */
     public static void printEndGameMessage(int gameState, boolean upper) {
         if (gameState == 1) {
             if (upper) {

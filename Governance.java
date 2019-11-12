@@ -1,6 +1,9 @@
 import java.util.HashMap;
 import java.util.LinkedList;
 
+/**
+ * Represents a Governance piece in BoxShogi
+ */
 public class Governance extends Piece {
     public Governance(String name, boolean upper) {
         this.name = name;

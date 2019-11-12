@@ -1,5 +1,8 @@
 import java.util.HashMap;
 
+/**
+ * Represents a Relay piece in BoxShogi
+ */
 public class Relay extends Piece{
     public Relay(String name, boolean upper) {
         this.name = name;

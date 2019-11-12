@@ -1,5 +1,8 @@
 import java.util.HashMap;
 
+/**
+ * Represents a Shield piece in BoxShogi
+ */
 public class Shield extends Piece {
     public Shield(String name, boolean upper) {
         this.name = name;

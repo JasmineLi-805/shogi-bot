@@ -1,7 +1,18 @@
+
 public class PieceFactory {
+
+    /**
+     * creates a piece based on the given piece name and other information.
+     *
+     * @param name the name of the piece
+     * @param upper true if the piece belongs to the UPPER player
+     * @param promote true if the piece is promoted
+     * @return a piece created based on the parameters above.
+     */
     public static Piece createPiece(String name, boolean upper, boolean promote) {
         Piece piece = null;
 
+        // create different types of pieces based on the piece name
         if (name.endsWith("D") || name.endsWith("d")) {
             piece = new Drive(name, upper);
         } else if (name.endsWith("N") || name.endsWith("n")) {
@@ -18,6 +29,7 @@ public class PieceFactory {
             return piece;
         }
 
+        // promote the piece is asked to
         if (promote) {
             piece.promote();
         }

@@ -1,6 +1,9 @@
+/**
+ * Represents the x and y coordinate
+ */
 public class Step {
-    int x;
-    int y;
+    public int x;      // x coordinate
+    public int y;      // y coordinate
 
     public Step(int x, int y) {
         this.x = x;

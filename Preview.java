@@ -1,5 +1,8 @@
 import java.util.HashMap;
 
+/**
+ * Represents a Preview piece in BoxShogi
+ */
 public class Preview extends Piece {
     public Preview(String name, boolean upper) {
         this.name = name;

@@ -1,6 +1,9 @@
 import java.util.HashMap;
 import java.util.LinkedList;
 
+/**
+ * Represents a Notes piece in BoxShogi
+ */
 public class Notes extends Piece {
     public Notes(String name, boolean upper) {
         this.name = name;
