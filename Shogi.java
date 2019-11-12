@@ -39,7 +39,7 @@ public class Shogi {
      * @param newStart true if it is a new start of the game
      * @param r the number of rounds played before interactive mode starts
      */
-    public static void interactiveMode(boolean newStart, int r) {
+    private static void interactiveMode(boolean newStart, int r) {
         // tracking the game state.
         //   gameState = 0: game continues;  gameState = 1: illegal move
         //   gameState = 2: checkmate     ;  gameState = 3: tie game
@@ -91,7 +91,7 @@ public class Shogi {
      *
      * @param fileCase a TestCase parsed from the file
      */
-    public static void fileMode(Utils.TestCase fileCase) {
+    private static void fileMode(Utils.TestCase fileCase) {
         // setup the board and the captured pieces.
         setBoard(fileCase.initialPieces);
         setPieces(fileCase.upperCaptures, fileCase.lowerCaptures);
@@ -159,7 +159,7 @@ public class Shogi {
      * @param upper true if it is the upper player applying the action, false if is the lower player
      * @return true iff the action is successfully applied.
      */
-    public static boolean applyAction(String nextAction, boolean upper) {
+    private static boolean applyAction(String nextAction, boolean upper) {
         String[] action = nextAction.split(" ",0);
 
         if (action.length > 4 || action.length < 3) {
@@ -249,7 +249,7 @@ public class Shogi {
      * @param upper if the current player is the UPPER player
      * @return true iff the given player is in check
      */
-    public static boolean check(boolean upper) {
+    private static boolean check(boolean upper) {
         // find the Drive piece for this user
         String drivePosition = "";
         for (int i = 0; i < 5; i++) {
@@ -296,7 +296,7 @@ public class Shogi {
      * @param upper true if it is the UPPER player's move
      * @return true if it is an allowed move for the user to drop the piece at the given position
      */
-    public static boolean validDrop(String pieceName, String position, boolean upper) {
+    private static boolean validDrop(String pieceName, String position, boolean upper) {
         char p = pieceName.charAt(0);
         if (upper && (int)p > 96) {
             // if is UPPER user's round, capitalize piece name
@@ -333,7 +333,7 @@ public class Shogi {
      * @param upper if it is the UPPER player's round
      * @return true iff the Preview piece can be dropped to the position.
      */
-    public static boolean validPreviewDrop(Step position, boolean upper){
+    private static boolean validPreviewDrop(Step position, boolean upper){
         // if is in promotion zone
         if (upper && position.y == 0) {
             return false;
@@ -379,7 +379,7 @@ public class Shogi {
      * @param upper if it is the UPPER player's round
      * @return true iff the piece can be moved from start to end by this player
      */
-    public static boolean validMove(String start, String end, boolean upper) {
+    private static boolean validMove(String start, String end, boolean upper) {
         Step ori = toPosition(start);
         Piece toMove = board.getPiece(ori.x, ori.y);
         // if there is no piece at the location or the piece doesn't belong to the current player, move fail.
@@ -517,7 +517,7 @@ public class Shogi {
      * @param upper the side of the player
      * @return the input of the user
      */
-    public static String promptNextMove(Scanner console, boolean upper) {
+    private static String promptNextMove(Scanner console, boolean upper) {
         if (upper) {
             System.out.print("UPPER> ");
         } else {
@@ -624,7 +624,7 @@ public class Shogi {
     /**
      * Initialized the board according to rules of BoxShogi
      */
-    public static void initializeBoard() {
+    private static void initializeBoard() {
         char[] pieces = {'D', 'R', 'P', 'S', 'N', 'G', 'd', 'r', 'p', 's', 'n', 'g'};
         int[][] position = {{5, 5}, {3, 5}, {5, 4}, {4, 5}, {1, 5}, {2, 5},
                             {1, 1}, {3, 1}, {1, 2}, {2, 1}, {5, 1}, {4, 1}};
@@ -640,7 +640,7 @@ public class Shogi {
      * @param upperCaptures pieces captured by UPPER player
      * @param lowerCaptures pieces captured by lower player
      */
-    public static void setPieces(List<String> upperCaptures, List<String> lowerCaptures) {
+    private static void setPieces(List<String> upperCaptures, List<String> lowerCaptures) {
         if (!upperCaptures.isEmpty()) {
             for (String s : upperCaptures) {
                 if (s.length() > 0) {
@@ -664,7 +664,7 @@ public class Shogi {
      * @param initialPieces the pieces and their locations
      * @return true iff the setup is successful
      */
-    public static boolean setBoard(List<Utils.InitialPosition> initialPieces) {
+    private static boolean setBoard(List<Utils.InitialPosition> initialPieces) {
         if (initialPieces == null) {
             return false;
         }
@@ -701,7 +701,7 @@ public class Shogi {
     /**
      * prints the current board state and the captured pieces
      */
-    public static void printState() {
+    private static void printState() {
         System.out.println(board.toString());
 
         System.out.print("Captures UPPER:");
@@ -724,7 +724,7 @@ public class Shogi {
      * @param upper the player
      * @param action the most recent move by the player
      */
-    public static void printAction(boolean upper, String action) {
+    private static void printAction(boolean upper, String action) {
         if (upper){
             System.out.println("UPPER player action: " + action);
         } else {
@@ -740,7 +740,7 @@ public class Shogi {
      *                  2 for checkmate; 3 for tie game
      * @param upper the player
      */
-    public static void printEndGameMessage(int gameState, boolean upper) {
+    private static void printEndGameMessage(int gameState, boolean upper) {
         if (gameState == 1) {
             if (upper) {
                 System.out.println("lower player wins.  Illegal move.");
