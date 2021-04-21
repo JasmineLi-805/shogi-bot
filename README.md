@@ -1,1 +1,1 @@
-# box-take-home
+# Simple Shogi Bot
